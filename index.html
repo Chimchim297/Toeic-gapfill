@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TOEIC Gap Fill Quiz</title>
+<style>
+body { font-family: Arial; max-width: 900px; margin: auto; padding: 20px; }
+input { padding: 5px; margin: 5px; }
+.correct { color: green; }
+.wrong { color: red; }
+.hint { margin-top: 10px; color: #555; cursor: pointer; }
+button { margin-top: 20px; padding: 10px 15px; }
+</style>
+</head>
+<body>
+
+<h2 id="title"></h2>
+<div id="quiz"></div>
+
+<button onclick="checkAnswers()">Kiểm tra đáp án</button>
+<button onclick="nextPart()">Next</button>
+
+<div id="result"></div>
+
+<script>
+const parts = [
+{
+title: "Part 1",
+questions: [
+{ q: "The company plans to ____ its operations.", answers: ["expand","increase"], hint: "🔊 mở rộng" },
+{ q: "Employees must ____ safety rules.", answers: ["follow","obey"], hint: "🔊 tuân thủ" }
+]
+},
+{
+title: "Part 2",
+questions: [
+{ q: "The manager gave a ____ of the report.", answers: ["summary"], hint: "🔊 tóm tắt" },
+{ q: "We need to ____ the deadline.", answers: ["extend"], hint: "🔊 gia hạn" }
+]
+},
+{
+title: "Part 3",
+questions: [
+{ q: "She is ____ customer requests.", answers: ["handling"], hint: "🔊 xử lý" },
+{ q: "Sales showed an ____ last year.", answers: ["increase","rise"], hint: "🔊 tăng" }
+]
+},
+{
+title: "Part 4",
+questions: [
+{ q: "Please ____ the form.", answers: ["fill","fill out"], hint: "🔊 điền" },
+{ q: "Meeting was ____ to Monday.", answers: ["postponed"], hint: "🔊 hoãn" }
+]
+},
+{
+title: "Part 5",
+questions: [
+{ q: "He made a serious ____.", answers: ["mistake","error"], hint: "🔊 lỗi" },
+{ q: "They want to ____ costs.", answers: ["reduce","cut"], hint: "🔊 giảm" }
+]
+},
+{
+title: "Part 6",
+questions: [
+{ q: "We must ____ quickly.", answers: ["act"], hint: "🔊 hành động" },
+{ q: "She gave a clear ____.", answers: ["explanation"], hint: "🔊 giải thích" }
+]
+},
+{
+title: "Part 7",
+questions: [
+{ q: "The product is very ____.", answers: ["popular"], hint: "🔊 phổ biến" },
+{ q: "We need more ____.", answers: ["staff","employees"], hint: "🔊 nhân viên" }
+]
+}
+];
+
+// shuffle parts
+parts.sort(() => Math.random() - 0.5);
+
+let currentPart = 0;
+let userAnswers = [];
+
+function loadPart() {
+document.getElementById("title").innerText = parts[currentPart].title;
+const quizDiv = document.getElementById("quiz");
+quizDiv.innerHTML = "";
+
+parts[currentPart].questions.forEach((q, i) => {
+quizDiv.innerHTML += `
+<p>${i+1}. ${q.q}</p>
+<input type="text" id="q${i}">
+<div class="hint" onclick="speak('${q.answers[0]}')">${q.hint}</div>
+`;
+});
+}
+
+function normalize(text) {
+return text.trim().toLowerCase();
+}
+
+function checkAnswers() {
+let correct = 0;
+let output = "";
+
+parts[currentPart].questions.forEach((q, i) => {
+let user = normalize(document.getElementById(`q${i}`).value);
+let isCorrect = q.answers.some(a => normalize(a) === user);
+
+if(isCorrect) {
+output += `<p class="correct">Câu ${i+1}: Đúng</p>`;
+correct++;
+} else {
+output += `<p class="wrong">Câu ${i+1}: Sai (Đáp án: ${q.answers.join(", ")})</p>`;
+}
+});
+
+userAnswers.push(correct);
+document.getElementById("result").innerHTML = output;
+}
+
+function nextPart() {
+if(currentPart < parts.length - 1) {
+currentPart++;
+loadPart();
+document.getElementById("result").innerHTML = "";
+} else {
+showFinal();
+}
+}
+
+function showFinal() {
+let totalCorrect = userAnswers.reduce((a,b)=>a+b,0);
+let totalQuestions = parts.length * 2;
+let percent = Math.round((totalCorrect/totalQuestions)*100);
+
+document.body.innerHTML = `
+<h2>KẾT QUẢ CUỐI</h2>
+<p>Điểm: ${totalCorrect}/${totalQuestions}</p>
+<p>Accuracy: ${percent}%</p>
+`;
+}
+
+function speak(word) {
+let msg = new SpeechSynthesisUtterance(word);
+msg.lang = "en-US";
+speechSynthesis.speak(msg);
+}
+
+loadPart();
+</script>
+
+</body>
+</html>
